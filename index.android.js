@@ -37,8 +37,11 @@ class ABCGoodNews extends Component {
   }
 
   fetchNews() {
-    this.state.loading = 'Loading...';
-    this.state.articles = [];
+    this.state.loading = 'Refreshing...';
+    this.setState({
+      articles: [],
+      articlesDataSource: this.state.articlesDataSource.cloneWithRows([]),
+    });
       fetch(this.abcUrl)
       .then((response) => response.json())
       .then((responseData) => {
@@ -81,7 +84,7 @@ class ABCGoodNews extends Component {
           <Text style = {styles.padded}>{this.state.loading}</Text>
           <ListView
             dataSource={this.state.articlesDataSource}
-            renderRow={this.renderArticle}
+            renderRow={this.renderArticle.bind(this)}
             enableEmptySections={true}
           />
 
@@ -91,8 +94,9 @@ class ABCGoodNews extends Component {
   }
 
   renderArticle(article) {
+    var col = (this.state.happyModeOn === true) ? '#33cc33' : '#bfbfbf';
     return (
-      <View style = {styles.row}>
+      <View style = {[styles.row, {backgroundColor: col}]}>
         <Image source={{uri: article.media['80x60']}} style={styles.thumbnail}/>
         <Text style={styles.text}>{article.short_description}</Text>
       </View> );
@@ -103,7 +107,6 @@ class ABCGoodNews extends Component {
     if (isHappyModeEnabled === false) {
       _this.fetchNews();
     } else {
-      this.state.loading = 'Filtering happy news...';
       this.state.articles.forEach((article) => {
         _this.checkHappinessViaAlchemyAPI(article);
       });
@@ -128,7 +131,6 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   row: {
-    backgroundColor: '#F0F0F0F0',
     margin: 10,
     flexDirection: 'row',
   },
