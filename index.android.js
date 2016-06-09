@@ -62,14 +62,17 @@ class ABCGoodNews extends Component {
     .then((response) => response.json())
     .then((responseData) => {
       // if (responseData.docSentiment.type !== 'positive') {
-      var filtered = this.state.articles.filter((article) => article.short_description[0] !== 'T');
-      this.setState({
-        articlesDataSource: this.state.articlesDataSource.cloneWithRows(filtered),
-      });
+      if (article.short_description[0] !== 'T') {
+        var filtered = this.state.articles.splice(this.state.articles.indexOf(article), 1);
+        this.setState({
+          articlesDataSource: this.state.articlesDataSource.cloneWithRows(filtered),
+        });
+      }
+
+
     }).catch((err) => {
       console.warn(err);
     });
-    this.state.loading = '';
   }
 
   render() {
@@ -95,9 +98,10 @@ class ABCGoodNews extends Component {
 
   renderArticle(article) {
     var col = (this.state.happyModeOn === true) ? '#33cc33' : '#bfbfbf';
+    var imgUrl = (article.media['80x60'].length > 0) ? article.media['80x60'] : 'http://www.51allout.co.uk/wp-content/uploads/2012/02/Image-not-found.gif';
     return (
       <View style = {[styles.row, {backgroundColor: col}]}>
-        <Image source={{uri: article.media['80x60']}} style={styles.thumbnail}/>
+        <Image source={{uri: imgUrl}} style={styles.thumbnail}/>
         <Text style={styles.text}>{article.short_description}</Text>
       </View> );
   }
