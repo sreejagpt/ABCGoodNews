@@ -13,29 +13,54 @@ class ABCGoodNews extends Component {
 
   constructor(props) {
     super(props);
-    this.abcUrl = 'http://mobile-api.abc.net.au/api/category/id/1';
+    this.abcUrl = 'http://mobile-api.abc.net.au/api/category/id/4';
+    this.alchemyUrl = 'http://gateway-a.watsonplatform.net/calls/text/TextGetTextSentiment'
+    this.apikey = '57ca1ed8555db66e07da90574632d0b8171f5147';
     this.state = {
-      articles : new ListView.DataSource({
+      articlesDataSource : new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
       }),
       happyModeOn: false,
+      articles: [],
     };
   }
 
-  componentDidMount() {
-      this.fetchData(this.abcUrl);
+  componentWillMount() {
+    this.state.loading = 'Loading...';
   }
 
-  fetchData(url) {
-      fetch(url)
+  componentDidMount() {
+      this.state.loading = '';
+      this.fetchNews();
+  }
+
+  fetchNews() {
+      fetch(this.abcUrl)
       .then((response) => response.json())
       .then((responseData) => {
-        console.log(responseData.data.articles);
           this.setState({
-            articles: this.state.articles.cloneWithRows(responseData.data.articles),
+            articles: responseData.data.articles,
+            articlesDataSource: this.state.articlesDataSource.cloneWithRows(responseData.data.articles),
           });
+          // articles.forEach((article) => {
+          //   checkHappinessViaAlchemyAPI(article.title + " " + article.short_description);
+          // };
       })
       .done();
+  }
+
+  checkHappinessViaAlchemyAPI(text) {
+    fetch(this.alchemyUrl + '?apikey=' + this.apikey + '&text=' + text + '&outputMode=json',
+      {
+        method: 'post',
+      })
+    .then((response) => response.json())
+    .then((responseData) => {
+      console.warn(responseData.docSentiment.type);
+      return responseData.docSentiment.type;
+    }).catch(function(err) {
+      console.warn(err);
+    });
   }
 
   render() {
@@ -45,19 +70,31 @@ class ABCGoodNews extends Component {
           <View style={styles.horizontal}>
             <Text>Happy Mode {this.isHappyModeEnabled()}</Text>
             <Switch
-            onValueChange={(value) => this.setState({happyModeOn: value})}
+            onValueChange={(value) => {this.setState({happyModeOn: value}); this.filterList(value);}}
             value={this.state.happyModeOn} />
           </View>
-
+          <Text style = {styles.padded}>{this.state.loading}</Text>
 
           <ListView
-            dataSource={this.state.articles}
+            dataSource={this.state.articlesDataSource}
             renderRow={(article) => <Text style = {styles.row}>{article.short_description}</Text>}
           />
 
         </View>
 
     );
+  }
+
+  filterList(isHappyModeEnabled) {
+    var _this = this;
+    if (isHappyModeEnabled === false) {
+      _this.fetchNews();
+    } else {
+      var happyArticlesOnly = _this.state.articles.filter((article) => {
+        _this.checkHappinessViaAlchemyAPI(article.title + " " + article.short_description) === 'positive';
+      });
+      console.warn(happyArticlesOnly.length);
+    }
   }
 
   isHappyModeEnabled() {
@@ -78,6 +115,9 @@ const styles = StyleSheet.create({
   row: {
     backgroundColor: '#F0F0F0F0',
     margin: 10,
+  },
+  padded: {
+    paddingLeft: 10,
   },
   settings: {
     width: 50,
