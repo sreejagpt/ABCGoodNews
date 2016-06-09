@@ -30,42 +30,45 @@ class ABCGoodNews extends Component {
   }
 
   componentDidMount() {
-      this.state.loading = '';
+    this.state.loading = '';
+
       this.fetchNews();
   }
 
   fetchNews() {
+    this.state.loading = 'Loading...';
+    this.state.articles = [];
       fetch(this.abcUrl)
       .then((response) => response.json())
       .then((responseData) => {
+        this.state.loading = '';
           this.setState({
             articles: responseData.data.articles,
-            articlesDataSource: this.state.articlesDataSource.cloneWithRows(responseData.data.articles),
           });
-          // articles.forEach((article) => {
-          //   checkHappinessViaAlchemyAPI(article.title + " " + article.short_description);
-          // };
       })
       .done();
   }
 
-  checkHappinessViaAlchemyAPI(text) {
-    fetch(this.alchemyUrl + '?apikey=' + this.apikey + '&text=' + text + '&outputMode=json',
+  checkHappinessViaAlchemyAPI(article) {
+    this.state.loading = 'Filtering Happy News...';
+    return fetch(this.alchemyUrl + '?apikey=' + this.apikey + '&text=' + article.title + " " + article.short_description  + '&outputMode=json',
       {
         method: 'post',
       })
     .then((response) => response.json())
     .then((responseData) => {
-      console.warn(responseData.docSentiment.type);
-      return responseData.docSentiment.type;
-    }).catch(function(err) {
+      console.log(responseData);
+      if (responseData.docSentiment.type !== 'positive') {
+        this.state.articles.splice(this.state.articles.indexOf(article), 1);
+      }
+    }).catch((err) => {
       console.warn(err);
     });
+    this.state.loading = '';
   }
 
   render() {
     return (
-
         <View style={styles.container}>
           <View style={styles.horizontal}>
             <Text>Happy Mode {this.isHappyModeEnabled()}</Text>
@@ -74,10 +77,10 @@ class ABCGoodNews extends Component {
             value={this.state.happyModeOn} />
           </View>
           <Text style = {styles.padded}>{this.state.loading}</Text>
-
           <ListView
-            dataSource={this.state.articlesDataSource}
-            renderRow={(article) => <Text style = {styles.row}>{article.short_description}</Text>}
+            dataSource={this.state.articlesDataSource.cloneWithRows(this.state.articles)}
+            renderRow={this.renderArticle}
+            enableEmptySections={true}
           />
 
         </View>
@@ -85,15 +88,22 @@ class ABCGoodNews extends Component {
     );
   }
 
+  renderArticle(article) {
+    return (
+      <View style = {styles.row}>
+        <Image source={{uri: article.media['80x60']}} style={styles.thumbnail}/>
+        <Text style={styles.text}>{article.short_description}</Text>
+      </View> );
+  }
+
   filterList(isHappyModeEnabled) {
     var _this = this;
     if (isHappyModeEnabled === false) {
       _this.fetchNews();
     } else {
-      var happyArticlesOnly = _this.state.articles.filter((article) => {
-        _this.checkHappinessViaAlchemyAPI(article.title + " " + article.short_description) === 'positive';
+      this.state.articles.forEach((article) => {
+        _this.checkHappinessViaAlchemyAPI(article);
       });
-      console.warn(happyArticlesOnly.length);
     }
   }
 
@@ -115,14 +125,23 @@ const styles = StyleSheet.create({
   row: {
     backgroundColor: '#F0F0F0F0',
     margin: 10,
+    flexDirection: 'row',
   },
   padded: {
-    paddingLeft: 10,
+    marginLeft: 100,
   },
   settings: {
     width: 50,
     height: 50,
   },
+  thumbnail: {
+    width: 80,
+    height: 60,
+  },
+  text: {
+    width: 200,
+    marginLeft: 15,
+  }
 });
 
 AppRegistry.registerComponent('ABCGoodNews', () => ABCGoodNews);
