@@ -22,6 +22,7 @@ class ABCGoodNews extends Component {
       }),
       happyModeOn: false,
       articles: [],
+      happyArticles: [],
     };
   }
 
@@ -44,23 +45,24 @@ class ABCGoodNews extends Component {
         this.state.loading = '';
           this.setState({
             articles: responseData.data.articles,
+            articlesDataSource: this.state.articlesDataSource.cloneWithRows(responseData.data.articles),
           });
       })
       .done();
   }
 
   checkHappinessViaAlchemyAPI(article) {
-    this.state.loading = 'Filtering Happy News...';
     return fetch(this.alchemyUrl + '?apikey=' + this.apikey + '&text=' + article.title + " " + article.short_description  + '&outputMode=json',
       {
         method: 'post',
       })
     .then((response) => response.json())
     .then((responseData) => {
-      console.log(responseData);
-      if (responseData.docSentiment.type !== 'positive') {
-        this.state.articles.splice(this.state.articles.indexOf(article), 1);
-      }
+      // if (responseData.docSentiment.type !== 'positive') {
+      var filtered = this.state.articles.filter((article) => article.short_description[0] !== 'T');
+      this.setState({
+        articlesDataSource: this.state.articlesDataSource.cloneWithRows(filtered),
+      });
     }).catch((err) => {
       console.warn(err);
     });
@@ -78,7 +80,7 @@ class ABCGoodNews extends Component {
           </View>
           <Text style = {styles.padded}>{this.state.loading}</Text>
           <ListView
-            dataSource={this.state.articlesDataSource.cloneWithRows(this.state.articles)}
+            dataSource={this.state.articlesDataSource}
             renderRow={this.renderArticle}
             enableEmptySections={true}
           />
@@ -101,9 +103,12 @@ class ABCGoodNews extends Component {
     if (isHappyModeEnabled === false) {
       _this.fetchNews();
     } else {
+      this.state.loading = 'Filtering happy news...';
       this.state.articles.forEach((article) => {
         _this.checkHappinessViaAlchemyAPI(article);
       });
+      this.state.loading = '';
+
     }
   }
 
