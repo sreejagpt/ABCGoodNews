@@ -80,7 +80,7 @@ class ABCGoodNews extends Component {
     return (
         <View style={styles.container}>
           <View style={styles.horizontal}>
-            <Text>Happy Mode {this.isHappyModeEnabled()}</Text>
+            <Text style={styles.title}>Happy Mode {this.isHappyModeEnabled()}</Text>
             <Switch
             onValueChange={(value) => {this.setState({happyModeOn: value}); this.filterList(value);}}
             value={this.state.happyModeOn} />
@@ -104,7 +104,11 @@ class ABCGoodNews extends Component {
     return (
       <View style = {[styles.row, {backgroundColor: col}]}>
         <Image source={{uri: imgUrl}} style={styles.thumbnail}/>
-        <Text style={styles.text}>{article.short_description}</Text>
+        <View style={{flexDirection: 'column'}}>
+          <Text style={styles.title}>{article.title}</Text>
+          <Text style={styles.text}>{article.short_description}</Text>
+        </View>
+
       </View> );
   }
 
@@ -122,7 +126,7 @@ class ABCGoodNews extends Component {
   }
 
   isHappyModeEnabled() {
-    return (this.state.happyModeOn === true) ? 'ON' : 'OFF';
+    return (this.state.happyModeOn === true) ? 'ON!' : 'OFF';
   }
 }
 
@@ -155,6 +159,12 @@ const styles = StyleSheet.create({
   text: {
     width: 220,
     marginLeft: 15,
+  },
+  title: {
+    fontWeight: 'bold',
+    width: 220,
+    marginLeft: 15,
+    marginBottom: 5,
   }
 });
 
