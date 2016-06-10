@@ -39,6 +39,9 @@ class ABCGoodNews extends Component {
   fetchNews() {
     this.state.loading = 'Refreshing...';
     this.setState({
+      happyArticles: [],
+    });
+    this.setState({
       articles: [],
       articlesDataSource: this.state.articlesDataSource.cloneWithRows([]),
     });
@@ -61,15 +64,13 @@ class ABCGoodNews extends Component {
       })
     .then((response) => response.json())
     .then((responseData) => {
-      // if (responseData.docSentiment.type !== 'positive') {
-      if (article.short_description[0] !== 'T') {
-        var filtered = this.state.articles.filter((a) => a !== article);
+      if (responseData.docSentiment.type === 'positive') {
+      // if (article.short_description[0] !== 'T') {
+        this.state.happyArticles.push(article);
         this.setState({
-          articlesDataSource: this.state.articlesDataSource.cloneWithRows(filtered),
+          articlesDataSource: this.state.articlesDataSource.cloneWithRows(this.state.happyArticles),
         });
       }
-
-
     }).catch((err) => {
       console.warn(err);
     });
