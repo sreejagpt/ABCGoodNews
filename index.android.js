@@ -63,7 +63,7 @@ class ABCGoodNews extends Component {
     .then((responseData) => {
       // if (responseData.docSentiment.type !== 'positive') {
       if (article.short_description[0] !== 'T') {
-        var filtered = this.state.articles.splice(this.state.articles.indexOf(article), 1);
+        var filtered = this.state.articles.filter((a) => a !== article);
         this.setState({
           articlesDataSource: this.state.articlesDataSource.cloneWithRows(filtered),
         });
@@ -86,6 +86,7 @@ class ABCGoodNews extends Component {
           </View>
           <Text style = {styles.padded}>{this.state.loading}</Text>
           <ListView
+            style={{backgroundColor: '#595959'}}
             dataSource={this.state.articlesDataSource}
             renderRow={this.renderArticle.bind(this)}
             enableEmptySections={true}
@@ -97,8 +98,8 @@ class ABCGoodNews extends Component {
   }
 
   renderArticle(article) {
-    var col = (this.state.happyModeOn === true) ? '#33cc33' : '#bfbfbf';
-    var imgUrl = (article.media['80x60'].length > 0) ? article.media['80x60'] : 'http://www.51allout.co.uk/wp-content/uploads/2012/02/Image-not-found.gif';
+    var col = (this.state.happyModeOn === true) ? '#bbff99' : '#bfbfbf';
+    var imgUrl = (article.media && article.media['80x60'].length > 0) ? article.media['80x60'] : 'http://www.51allout.co.uk/wp-content/uploads/2012/02/Image-not-found.gif';
     return (
       <View style = {[styles.row, {backgroundColor: col}]}>
         <Image source={{uri: imgUrl}} style={styles.thumbnail}/>
@@ -135,8 +136,9 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
   },
   row: {
-    margin: 10,
+    margin: 1,
     flexDirection: 'row',
+    padding: 10,
   },
   padded: {
     marginLeft: 100,
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
     height: 60,
   },
   text: {
-    width: 200,
+    width: 220,
     marginLeft: 15,
   }
 });
