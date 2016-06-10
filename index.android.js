@@ -15,7 +15,7 @@ class ABCGoodNews extends Component {
     super(props);
     this.abcUrl = 'http://mobile-api.abc.net.au/api/category/id/4';
     this.alchemyUrl = 'http://gateway-a.watsonplatform.net/calls/text/TextGetTextSentiment'
-    this.apikey = '57ca1ed8555db66e07da90574632d0b8171f5147';
+    this.apikey = 'fb6cfaf5193cf92c82ea39986a307e7316886404';
     this.state = {
       articlesDataSource : new ListView.DataSource({
         rowHasChanged: (row1, row2) => row1 !== row2,
@@ -73,10 +73,11 @@ class ABCGoodNews extends Component {
   }
 
   render() {
+    var col = (this.state.happyModeOn === true) ? '#2a8000' : '#000000';
     return (
         <View style={styles.container}>
           <View style={styles.horizontal}>
-            <Text style={styles.title}>Happy Mode {this.isHappyModeEnabled()}</Text>
+            <Text style={[styles.title, {color: col}]}>Happy Mode {this.isHappyModeEnabled()}</Text>
             <Switch
             onValueChange={(value) => {this.setState({happyModeOn: value}); this.filterList(value);}}
             value={this.state.happyModeOn} />
@@ -114,6 +115,7 @@ class ABCGoodNews extends Component {
       _this.fetchNews();
     } else {
       this.setState({
+        articlesDataSource: this.state.articlesDataSource.cloneWithRows([]),
         happyArticles: [],
       });
       this.state.articles.forEach((article) => {
@@ -167,6 +169,7 @@ const styles = StyleSheet.create({
     width: 220,
     marginLeft: 15,
     marginBottom: 5,
+    marginTop: 2,
   }
 });
 
