@@ -37,10 +37,6 @@ class ABCGoodNews extends Component {
   }
 
   fetchNews() {
-    this.state.loading = 'Refreshing...';
-    this.setState({
-      happyArticles: [],
-    });
     this.setState({
       articles: [],
       articlesDataSource: this.state.articlesDataSource.cloneWithRows([]),
@@ -117,6 +113,9 @@ class ABCGoodNews extends Component {
     if (isHappyModeEnabled === false) {
       _this.fetchNews();
     } else {
+      this.setState({
+        happyArticles: [],
+      });
       this.state.articles.forEach((article) => {
         _this.checkHappinessViaAlchemyAPI(article);
       });
@@ -155,6 +154,9 @@ const styles = StyleSheet.create({
   thumbnail: {
     width: 80,
     height: 60,
+    borderWidth: 1,
+    borderRadius: 1,
+    borderColor: '#000000'
   },
   text: {
     width: 220,
